@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QRwip | One sign, change anytime</title>
+<meta name="description" content="Reusable QR signs for real estate. Print once, then change where the QR code sends people whenever a listing changes. No reprinting, no replacing.">
+<link rel="canonical" href="https://www.qrwip.com/">
+<link rel="icon" href="images/favicon.png">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="QRwip">
+<meta property="og:title" content="QRwip: one QR code, change it anytime">
+<meta property="og:description" content="Reusable QR signs for real estate. Keep the sign, change the link.">
+<meta property="og:image" content="https://www.qrwip.com/images/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--lime:#b8f000;--ink:#0b0d10;--gray:#5c6068;--line:#dcdee3;--fog:#f4f4f6;--r:12px}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{font:400 17px/1.55 Inter,system-ui,sans-serif;letter-spacing:-.01em;color:var(--ink);background:#fff}
+img{max-width:100%;display:block}
+a{color:inherit}
+h1,h2,h3{font-family:Outfit,system-ui,sans-serif;font-weight:600;letter-spacing:-.03em;line-height:1.05}
+h1{font-size:clamp(2.7rem,6vw,4.6rem)}
+h2{font-size:clamp(2rem,4.2vw,3rem)}
+p{color:var(--gray)}
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+section{padding:96px 0}
+.fog{background:var(--fog)}
+.head{max-width:620px;margin-bottom:48px}
+.head.c{margin-inline:auto;text-align:center}
+.head p{margin-top:14px;font-size:1.1rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--lime);color:#000;font:600 .95rem Inter,sans-serif;letter-spacing:-.01em;text-decoration:none;padding:14px 24px;border-radius:var(--r);border:0;cursor:pointer;transition:transform .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn.sm{padding:9px 16px;font-size:.88rem}
+.link{font-weight:600;text-decoration:none;padding:14px 8px}
+.link:hover{text-decoration:underline}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:24px;height:68px}
+.bar .logo img{height:30px;width:auto}
+.links{display:flex;gap:28px;margin:0 auto}
+.links a{text-decoration:none;font-size:.92rem;font-weight:500;color:var(--gray)}
+.links a:hover{color:var(--ink)}
+.menu{display:none;background:0;border:0;color:var(--ink);padding:8px;cursor:pointer}
+
+/* hero */
+.hero{padding:72px 0 96px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.eyebrow{font-weight:600;color:var(--gray);margin-bottom:16px;font-size:.95rem}
+.tag{font-size:1.3rem;color:var(--ink);font-weight:500;margin:20px 0 28px;letter-spacing:-.02em}
+.feats{display:flex;flex-wrap:wrap;gap:12px 24px;margin-bottom:32px}
+.feat{display:flex;align-items:center;gap:10px;font-weight:600;font-size:.93rem}
+.chip-i{width:36px;height:36px;border-radius:10px;background:var(--ink);display:grid;place-items:center;flex:none}
+.chip-i img{width:22px;height:22px}
+.cta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.shot{position:relative;border-radius:24px;overflow:hidden;background:var(--fog);aspect-ratio:4/4.4}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:60% 40%}
+.chip{position:absolute;left:16px;bottom:16px;background:rgba(255,255,255,.94);border-radius:var(--r);padding:10px 14px;font-size:.8rem;line-height:1.4;color:var(--gray)}
+.chip b{display:block;font-family:Outfit,sans-serif;color:var(--ink);font-size:.9rem}
+
+/* demo */
+.demo{display:grid;grid-template-columns:.8fr 1.2fr;gap:56px;align-items:center;max-width:960px;margin:0 auto}
+.signcol{text-align:center;font-size:.88rem;color:var(--gray)}
+.signcol img{width:min(100%,280px);margin:0 auto 14px;border-radius:18px;border:1px solid var(--line)}
+.lbl{font-weight:600;margin-bottom:12px}
+.tabs{display:inline-flex;gap:4px;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:4px;margin-bottom:16px;flex-wrap:wrap}
+.tab{border:0;background:none;border-radius:9px;padding:8px 16px;font:600 .88rem Inter,sans-serif;color:var(--gray);cursor:pointer}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+.step{margin-bottom:16px}
+.step b{display:block;font-family:Outfit,sans-serif;font-size:1.15rem;letter-spacing:-.02em}
+.step span{color:var(--gray);font-size:.95rem}
+.browser{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.url{background:var(--fog);padding:10px 16px;font-size:.8rem;color:var(--gray);border-bottom:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+.url b{color:var(--ink);font-weight:600}
+.page{padding:24px 28px 32px;min-height:150px}
+.page small{color:var(--gray);font-weight:600;font-size:.8rem}
+.page h3{font-size:1.7rem;margin:6px 0 8px}
+.page p{font-size:.95rem}
+.page.swap{animation:swap .3s ease}
+@keyframes swap{from{opacity:0;transform:translateY(6px)}}
+.proof{margin-top:48px;text-align:center;font-family:Outfit,sans-serif;font-size:1.25rem;font-weight:600;letter-spacing:-.02em}
+
+/* box */
+.box .wrap{display:grid;grid-template-columns:1fr 1.1fr;gap:64px;align-items:center}
+.list{margin:32px 0;display:grid}
+.item{display:flex;gap:16px;padding:18px 0;border-top:1px solid var(--line)}
+.item:last-child{border-bottom:1px solid var(--line)}
+.item svg{flex:none;width:44px;height:44px;padding:10px;border-radius:var(--r);background:var(--fog);stroke:var(--ink);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.item b{display:block;font-size:1.02rem}
+.item p{font-size:.93rem}
+.photo{border-radius:28px;width:100%;height:100%;min-height:360px;object-fit:cover}
+
+/* pricing */
+.price{background:#fff;border:1px solid var(--line);border-radius:20px;max-width:520px;margin:0 auto;padding:40px 36px}
+.badge{display:inline-block;background:var(--fog);color:var(--gray);font-weight:600;font-size:.8rem;border-radius:6px;padding:4px 10px;margin-bottom:18px}
+.price h2{font-size:clamp(1.9rem,4vw,2.6rem)}
+.price>p{margin:14px 0 24px}
+.amt{display:flex;align-items:baseline;gap:12px;margin-top:16px}
+.amt b{font:700 3rem/1 Outfit,sans-serif;letter-spacing:-.03em}
+.amt s{color:var(--gray);font-size:1.2rem}
+.amt span{color:var(--gray);font-size:.95rem}
+.checks{list-style:none;padding:0;display:grid;gap:16px;margin-bottom:28px}
+.checks li{display:flex;gap:12px;font-size:.93rem;color:var(--gray)}
+.checks li:before{content:"✓";flex:none;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--lime);font-weight:700;font-size:.75rem;display:grid;place-items:center;margin-top:2px}
+.checks b{display:block;color:var(--ink)}
+.price .btn{width:100%}
+.tiers{border:1px solid var(--line);border-radius:var(--r);padding:6px 16px;margin-bottom:24px;font-size:.92rem}
+.tiers b{display:block;padding:10px 0 6px}
+.tiers div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);color:var(--gray)}
+.tiers div span:first-child{color:var(--ink);font-weight:600}
+.price small{display:block;margin-top:14px;color:var(--gray);text-align:center;font-size:.88rem}
+
+/* faq */
+.faqlist{max-width:720px;margin:0 auto}
+details{border-top:1px solid var(--line)}
+details:last-child{border-bottom:1px solid var(--line)}
+summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:16px;align-items:center;padding:22px 4px;font-weight:600;font-size:1.05rem}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"+";flex:none;font-size:1.5rem;font-weight:400;color:var(--gray);line-height:1}
+details[open] summary:after{content:"–"}
+details p{padding:0 4px 24px;max-width:60ch}
+
+/* contact + footer */
+form{max-width:540px;margin:0 auto;display:grid;gap:16px;text-align:left}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{font-size:.88rem;font-weight:600;display:grid;gap:6px}
+label i{font-style:normal;color:var(--gray);font-weight:400}
+input,select,textarea{font:inherit;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--ink);outline-offset:1px;border-color:var(--ink)}
+textarea{min-height:110px;resize:vertical}
+form .btn{justify-self:start}
+.found{max-width:540px;margin:28px auto 0;font-size:.92rem}
+.found a{font-weight:600}
+footer{background:var(--ink);padding:40px 0;color:#c9ccd2}
+footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+footer img{height:28px;width:auto}
+footer a{text-decoration:none}
+footer a:hover{color:#fff}
+
+@media(max-width:860px){
+ section{padding:64px 0}
+ .hero{padding:40px 0 64px}
+ .hero .wrap,.box .wrap,.demo{grid-template-columns:1fr}
+ .hero .wrap{gap:36px}.shot{aspect-ratio:4/3.6}
+ .demo,.box .wrap{gap:36px}
+ .links{display:none;position:absolute;top:68px;left:0;right:0;flex-direction:column;gap:0;background:#fff;border-bottom:1px solid var(--line);padding:8px 24px 16px;margin:0}
+ .links.open{display:flex}.links a{padding:12px 0;font-size:1rem}
+ .menu{display:block;margin-left:auto}
+ .price{padding:32px 22px}
+ .row{grid-template-columns:1fr}
+ .photo{min-height:240px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="wrap bar">
+  <a class="logo" href="#top" aria-label="QRwip home"><img src="images/logo.png" alt="QRwip" width="90" height="30"></a>
+  <nav class="links" id="links" aria-label="Main">
+   <a href="#how-it-works">How it works</a><a href="#faq">FAQ</a><a href="#contact">Contact</a><a href="/account/">Log in</a>
+  </nav>
+  <a class="btn sm" href="#get">Get a QRwip</a>
+  <button class="menu" id="menu" aria-label="Menu" aria-expanded="false" aria-controls="links">
+   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+  </button>
+ </div>
+</header>
+
+<main id="top">
+<section class="hero">
+ <div class="wrap">
+  <div>
+   <p class="eyebrow">Reusable QR signs for real estate agents</p>
+   <h1>One QR code. Any destination.</h1>
+   <p class="tag">Keep the sign. Change the link anytime.</p>
+   <div class="feats">
+    <div class="feat"><span class="chip-i"><img src="images/icon-reprint.png" alt="" width="22" height="22"></span>No reprinting</div>
+    <div class="feat"><span class="chip-i"><img src="images/icon-replace.png" alt="" width="22" height="22"></span>No replacing</div>
+    <!-- Changed from "More from every sign" (vague). Edit freely. -->
+    <div class="feat"><span class="chip-i"><img src="images/icon-value.png" alt="" width="22" height="22"></span>Reuse on every listing</div>
+   </div>
+   <div class="cta"><a class="btn" href="#get">Get a QRwip</a><a class="link" href="#how-it-works">See how it works</a></div>
+  </div>
+  <div class="shot">
+   <img src="images/hero.jpg" alt="A QRwip sign mounted on a real estate sign post" width="1000" height="1174" fetchpriority="high">
+   <div class="chip"><b>QRwip #0001</b>Destination: property listing</div>
+  </div>
+ </div>
+</section>
+
+<section class="fog" id="how-it-works">
+ <div class="wrap">
+  <div class="head c">
+   <h2>One QRwip. Same sign, new purpose.</h2>
+   <p>The physical QR code never changes. You change where it sends people.</p>
+  </div>
+  <div class="demo">
+   <div class="signcol">
+    <img src="images/sign.svg" alt="QRwip sign number 0001 reading View this property" width="360" height="396">
+    The sign stays the same
+   </div>
+   <div>
+    <p class="lbl">Try it: change the destination</p>
+    <div class="tabs" role="tablist" aria-label="Destination examples" id="tabs"></div>
+    <div class="step" aria-live="polite"><b id="sTitle"></b><span id="sText"></span></div>
+    <div class="browser">
+     <div class="url"><span>qrwip.com/0001</span><span>→</span><b id="sUrl"></b></div>
+     <div class="page" id="sPage"><small id="pTag"></small><h3 id="pTitle"></h3><p id="pBody"></p></div>
+    </div>
+   </div>
+  </div>
+  <p class="proof">Same QR code. New destination. No reprinting.</p>
+ </div>
+</section>
+
+<section class="box">
+ <div class="wrap">
+  <div>
+   <h2>Everything you need in the box</h2>
+   <div class="list">
+    <div class="item"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h3v3H8zM13 8h3M13 11h3M8 15h8"/></svg><div><b>Physical sign</b><p>A professional QR sign, ready to display. Durable and built for outdoor use.</p></div></div>
+    <div class="item"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1-1"/></svg><div><b>Changeable link</b><p>Change where your QRwip sends visitors whenever you need to, without replacing the sign.</p></div></div>
+    <div class="item"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M9 9h2v2H9zM13 13h2v2h-2z"/></svg><div><b>One QR code</b><p>Your physical code stays the same, even when the destination changes.</p></div></div>
+    <div class="item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 3 3 5-6"/></svg><div><b>Simple setup</b><p>Get it, place it, start sharing. Visitors don't need an app.</p></div></div>
+   </div>
+   <a class="btn" href="#get">Get a QRwip</a>
+  </div>
+  <img class="photo" src="images/box.jpg" alt="QRwip sign next to the cable ties included for mounting" width="1600" height="864" loading="lazy">
+ </div>
+</section>
+
+<section class="fog" id="get">
+ <div class="wrap">
+  <div class="price">
+   <span class="badge">Early adopter access</span>
+   <h2>Get your QRwip</h2>
+   <div class="amt"><b>$29</b><s>$34.99</s><span>one-time, plus shipping</span></div>
+   <p>Physical QRwip sign + redirect service for the life of the sign. Early adopter price; regular price is $34.99.</p>
+   <!-- Volume prices below assume the $29 early-adopter price. Update them (or switch to % only) when the early-adopter price ends. -->
+   <ul class="checks">
+    <li><span><b>1× exterior QRwip sign</b>Durable 5" × 5.5" sign with cable ties for mounting.</span></li>
+    <li><span><b>Changeable destination</b>Update where your QRwip sends visitors when you need to.</span></li>
+    <li><span><b>Reusable QR code</b>Keep using the same physical code as your destination changes.</span></li>
+   </ul>
+   <div class="tiers">
+    <b>Volume pricing</b>
+    <div><span>5+ signs</span><span>10% off · $26.10 each</span></div>
+    <div><span>10+ signs</span><span>15% off · $24.65 each</span></div>
+    <div><span>25+ signs</span><span>20% off · $23.20 each</span></div>
+   </div>
+   <a class="btn" href="#contact">Get your QRwip</a>
+   <small>Standard signs typically ship within 1–2 business days. Custom designs take longer.</small>
+   <small>Want your logo and brand colors on the sign? <a href="#contact"><u>Request a custom design quote</u></a>.</small>
+  </div>
+ </div>
+</section>
+
+<section id="faq">
+ <div class="wrap">
+  <div class="head c"><h2>Got questions? We got answers.</h2></div>
+  <div class="faqlist">
+   <details name="faq" open><summary>Can I change where my QRwip sends people?</summary><p>Yes. That's the whole idea. Your physical QRwip stays the same while the destination changes whenever you need it to.</p></details>
+   <details name="faq"><summary>Do I or my visitors need an app?</summary><p>No. Visitors scan with their phone's regular camera, like any other QR code.</p></details>
+   <details name="faq"><summary>Can I use QRwip for something besides real estate?</summary><p>Yes. We're starting with real estate, but QRwip works anywhere a reusable physical QR code makes sense.</p></details>
+   <details name="faq"><summary>Can I order more than one?</summary><p>Yes, and the more you order, the less each one costs: 10% off at 5 or more, 15% off at 10 or more, and 20% off at 25 or more. Need QRwips for a whole team or brokerage? Contact us.</p></details>
+   <details name="faq"><summary>Can I get a custom design?</summary><p>Yes. We can put your logo and brand colors on the sign. Custom designs take a little longer than standard signs, and we'll send you a proof to approve before printing. Contact us for a quote.</p></details>
+   <!-- TODO: add real turnaround time for link changes, and update the next answer when the dashboard ships. -->
+   <details name="faq"><summary>How do I change my QRwip's destination?</summary><p>Email us the new link and we'll update it for you, without touching the physical sign. A dashboard where you can change it yourself is on the way.</p></details>
+  </div>
+ </div>
+</section>
+
+<section class="fog" id="contact">
+ <div class="wrap">
+  <div class="head c"><h2>Get in touch</h2></div>
+  <form id="form">
+   <div class="row">
+    <label>First name <i>(required)</i><input name="first" required autocomplete="given-name"></label>
+    <label>Last name <i>(required)</i><input name="last" required autocomplete="family-name"></label>
+   </div>
+   <label>Email <i>(required)</i><input type="email" name="email" required autocomplete="email"></label>
+   <label>Company / brokerage<input name="company" autocomplete="organization"></label>
+   <label>What are you interested in?
+    <select name="topic"><option>I want a QRwip for a property</option><option>I want several QRwips</option><option>I have a question</option><option>Something else</option></select>
+   </label>
+   <label>Message<textarea name="msg" placeholder="Have a question or idea? Tell us how we can help."></textarea></label>
+   <button class="btn" type="submit">Send message</button>
+  </form>
+  <p class="found">Are you the agent on a listing with a QRwip sign? <a href="mailto:hello@qrwip.com?subject=I%20found%20a%20QRwip">Say hello</a> and we'll tell you how it works.</p>
+ </div>
+</section>
+</main>
+
+<footer><div class="wrap"><a href="#top" aria-label="QRwip home"><img src="images/logo-lime.png" alt="QRwip" width="84" height="28"></a><a href="mailto:hello@qrwip.com">hello@qrwip.com</a></div></footer>
+
+<script>
+const menu=document.getElementById('menu'),links=document.getElementById('links');
+menu.addEventListener('click',()=>{const o=links.classList.toggle('open');menu.setAttribute('aria-expanded',o)});
+links.addEventListener('click',()=>{links.classList.remove('open');menu.setAttribute('aria-expanded',false)});
+
+const steps=[
+ {tab:'Listing',t:'1. Start with the listing',x:'Put QRwip on the real estate sign and send buyers straight to the property.',u:'1234pioneerdrive.com',g:'1234 Pioneer Drive',h:'Property listing',b:'Photos, property details, showing information, and a direct way to contact the agent.'},
+ {tab:'Sold',t:'2. Change the destination',x:'The property sold. Keep the same QRwip and change where the scan goes.',u:'lindseyrealestate.com',g:'Property sold',h:'The house sold.',b:'Send that same traffic to your website, other listings, your contact page, or wherever makes sense next.'},
+ {tab:'Next property',t:'3. Keep it moving',x:'Move the same QRwip to the next property, update the destination, and put it back to work.',u:'5678alaskaway.com',g:'5678 Alaska Way',h:'Onto the next one.',b:'Point the exact same physical QR code to its new listing.'}
+];
+const tabs=document.getElementById('tabs'),$=id=>document.getElementById(id);
+steps.forEach((s,i)=>{const b=document.createElement('button');b.className='tab';b.role='tab';b.textContent=s.tab;b.id='tab'+i;b.onclick=()=>show(i,true);tabs.appendChild(b)});
+function show(i,anim){
+ const s=steps[i];
+ [...tabs.children].forEach((b,j)=>{b.setAttribute('aria-selected',j===i);b.tabIndex=j===i?0:-1});
+ $('sTitle').textContent=s.t;$('sText').textContent=s.x;$('sUrl').textContent=s.u;
+ $('pTag').textContent=s.g;$('pTitle').textContent=s.h;$('pBody').textContent=s.b;
+ if(anim){const p=$('sPage');p.classList.remove('swap');void p.offsetWidth;p.classList.add('swap')}
+}
+tabs.addEventListener('keydown',e=>{
+ const k={ArrowRight:1,ArrowLeft:-1}[e.key];if(!k)return;
+ const i=[...tabs.children].findIndex(b=>b.getAttribute('aria-selected')==='true');
+ const n=(i+k+steps.length)%steps.length;show(n,true);tabs.children[n].focus();
+});
+show(0,false);
+
+document.getElementById('form').addEventListener('submit',e=>{
+ e.preventDefault();const f=new FormData(e.target);
+ const body=`Name: ${f.get('first')} ${f.get('last')}\nEmail: ${f.get('email')}\nCompany: ${f.get('company')||'-'}\n\n${f.get('msg')||''}`;
+ location.href=`mailto:hello@qrwip.com?subject=${encodeURIComponent('QRwip: '+f.get('topic'))}&body=${encodeURIComponent(body)}`;
+});
+</script>
+</body>
+</html>

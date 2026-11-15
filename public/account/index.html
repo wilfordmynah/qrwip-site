@@ -1,0 +1,173 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Your QRwips</title>
+<link rel="icon" href="/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0b0d10;--gray:#5c6068;--line:#dcdee3;--fog:#f4f4f6;--lime:#b8f000}
+*{box-sizing:border-box;margin:0}
+body{font:400 16px/1.5 Inter,system-ui,sans-serif;color:var(--ink);background:var(--fog);letter-spacing:-.01em}
+header{background:#fff;border-bottom:1px solid var(--line)}
+.bar{max-width:1040px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bar img{height:28px}.bar span{color:var(--gray);font-size:.9rem}
+main{max-width:760px;margin:0 auto;padding:40px 20px 80px}
+h1{font:600 2rem/1.1 Outfit,sans-serif;letter-spacing:-.03em;margin-bottom:8px}
+.s{color:var(--gray);margin-bottom:24px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:14px}
+label{display:grid;gap:6px;font-weight:600;font-size:.88rem;margin-bottom:14px}
+input{font:inherit;padding:11px 13px;border:1px solid var(--line);border-radius:12px;width:100%}
+input:focus{outline:2px solid var(--ink);outline-offset:1px}
+button{font:600 .95rem Inter,sans-serif;background:var(--lime);color:#000;border:0;border-radius:12px;padding:12px 20px;cursor:pointer}
+button.g{background:none;border:1px solid var(--line);padding:8px 14px;font-size:.85rem}
+.top,.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.top{justify-content:space-between;margin-bottom:14px}
+.id{font:600 1.1rem Outfit,sans-serif}.m{color:var(--gray);font-size:.85rem}
+#msg{padding:12px 16px;border-radius:12px;margin-bottom:16px;background:#fff;border:1px solid var(--line)}
+#msg.err{border-color:#c0392b;color:#8e2a1f}
+#gbtn{display:flex;justify-content:center}
+.or{display:flex;align-items:center;gap:12px;color:var(--gray);font-size:.85rem;margin:18px 0}.or:before,.or:after{content:"";flex:1;height:1px;background:var(--line)}
+body.auth header{display:none}body.auth main{max-width:420px;padding-top:7vh}
+.authbox h1{font-size:1.7rem;text-align:center}.authbox .s{text-align:center;margin-bottom:20px}.authbox .card{padding:24px}
+.alogo{display:block;height:32px;margin:0 auto 28px}button.full{width:100%}.c{text-align:center}.m a{color:var(--ink);font-weight:600}
+[hidden]{display:none!important}
+body:not(.auth) main{max-width:1040px}
+.dh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}.dh .s{margin-bottom:20px}
+.filter{max-width:340px;margin-bottom:12px}
+.tbl{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.th,.rw{display:grid;grid-template-columns:104px minmax(120px,1fr) minmax(200px,1.7fr) 92px 200px;gap:14px;align-items:center;padding:12px 16px}
+.th{background:var(--fog);color:var(--gray);font-size:.8rem;font-weight:600;border-bottom:1px solid var(--line)}
+.rw+.rw{border-top:1px solid var(--line)}
+.rw input{padding:9px 11px;font-size:.93rem}
+.sn b{display:block;font:600 1rem Outfit,sans-serif}.dot,.sc span{font-size:.78rem;color:var(--gray)}.sc b{display:block;font-weight:600}
+.ac{display:grid;gap:4px;justify-items:start}.ac button{padding:9px 16px;font-size:.88rem}.ac button:disabled{background:var(--fog);color:#9aa0a8;cursor:default}
+.lb{display:none}
+@media(max-width:860px){.th{display:none}.rw{grid-template-columns:1fr 1fr;gap:12px;padding:16px}.rw>.sc{text-align:right}.rw>.nm,.rw>.ds,.rw>.ac{grid-column:1/-1}.lb{display:block;font-size:.78rem;font-weight:600;color:var(--gray);margin-bottom:4px}}
+.dot:before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;border:1.5px solid #9aa0a8}
+.dot.on{color:var(--ink);font-weight:600}.dot.on:before{background:var(--lime);border-color:#86b300}
+.ck{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--lime);color:#000;font-size:.7rem;font-weight:800;margin-right:6px;vertical-align:1px}
+.ac button.done:disabled{color:var(--ink)}
+.hint{font-size:.78rem;color:#8a5a00;margin-top:4px}.hint:empty{display:none}
+.sub{display:flex;gap:12px}.sub a,.ac button.tl{font:600 .82rem Inter,sans-serif;color:var(--ink);background:none;border:0;border-radius:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.arch{margin-top:20px}.arch summary{cursor:pointer;font-weight:600;color:var(--gray);padding:8px 2px}.arch .tbl{margin-top:8px}
+.ar{color:var(--gray)}.ro{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.93rem}
+.tbl{overflow:visible}.th{border-radius:12px 12px 0 0}
+.dot:before{width:12px;height:12px;border:2px solid #9aa0a8}.dot.on:before{background:var(--lime);border-color:#a6d900}
+.ac{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ac .m{flex-basis:100%}
+.ac>button:not(.ib):not(.g):not(:disabled){background:var(--ink);color:#fff}
+.ib{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#eeeff1;color:var(--gray);cursor:pointer;text-decoration:none}
+.ib:hover{background:#e3e4e7;color:var(--ink)}.ib.off{opacity:.35;pointer-events:none}
+.ac button.ib{padding:0;border:0;background:#eeeff1;color:var(--gray)}.ac button.dots{background:none;width:36px}.ac button.dots:hover{background:var(--fog)}
+.mn{position:relative}.menu{position:absolute;right:0;top:100%;margin-top:4px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:6px;z-index:5;min-width:150px}
+.ac .menu button{display:block;width:100%;text-align:left;background:none;color:var(--ink);padding:10px 12px;border-radius:8px;font:500 .93rem Inter,sans-serif}.ac .menu button:hover{background:var(--fog)}
+</style></head><body>
+<header><div class="bar"><a href="/"><img src="/images/logo.png" alt="QRwip"></a><div class="row"><span id="who"></span><button class="g" id="out" hidden>Sign out</button></div></div></header>
+<main>
+ <div id="msg" role="status" hidden></div>
+ <section id="loginView" class="authbox" hidden>
+  <img class="alogo" src="/images/logo.png" alt="QRwip">
+  <h1>Sign in</h1><p class="s">Manage your QRwip signs.</p>
+  <div class="card">
+   <div id="codeRow" hidden><label>Claim code<input id="code" autocomplete="off" placeholder="XXXX-XXXX-XXXX"></label></div>
+   <div id="gwrap" hidden><div id="gbtn"></div><div class="or"><span>or</span></div></div>
+   <form id="loginForm"><label>Email<input type="email" id="email" required autocomplete="email" placeholder="you@example.com"></label><button class="full" type="submit">Continue with email</button></form>
+  </div>
+  <p class="m c"><a href="#" id="showCode">Have a claim code from your box?</a></p>
+ </section>
+ <section id="tokenView" class="authbox" hidden>
+  <img class="alogo" src="/images/logo.png" alt="QRwip">
+  <h1>Finish signing in</h1><p class="s">Tap the button to sign in on this device.</p>
+  <div class="card"><button class="full" id="tokenBtn">Sign in</button></div>
+ </section>
+ <section id="dashView" hidden>
+  <div class="dh"><div><h1>Your QRwips</h1><p class="s" id="count"></p></div><button class="g" id="addBtn">+ Add signs</button></div>
+  <form class="card" id="claimForm" hidden><label>Claim code from the card in your box<input id="newcode" autocomplete="off" placeholder="XXXX-XXXX-XXXX"></label><button type="submit">Add signs</button></form>
+  <input class="filter" id="filter" type="search" placeholder="Search by number, name, or link" aria-label="Search signs" hidden>
+  <div class="tbl" hidden><div class="th"><span>Sign</span><span>Name</span><span>Sends people to</span><span>Scans</span><span></span></div><div id="list"></div></div>
+  <details class="arch" id="arch" hidden><summary id="archSum"></summary><div class="tbl" id="archList"></div></details>
+ </section>
+</main>
+<script>
+const $=s=>document.querySelector(s), P=new URLSearchParams(location.search);
+const el=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a)e.setAttribute(k,a[k]);e.append(...c);return e};
+const api=async(p,b)=>{const r=await fetch('/api/'+p,b===undefined?{}:{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b)});return{ok:r.ok,status:r.status,...await r.json().catch(()=>({}))}};
+const msg=(t,err)=>{const m=$('#msg');m.textContent=t||'';m.className=err?'err':'';m.hidden=!t};
+const show=id=>{['loginView','tokenView','dashView'].forEach(v=>$('#'+v).hidden=v!==id);document.body.classList.toggle('auth',id!=='dashView')};
+const revealCode=()=>{$('#codeRow').hidden=false;$('#showCode').hidden=true};
+$('#showCode').onclick=e=>{e.preventDefault();revealCode();$('#code').focus()};
+
+$('#loginForm').onsubmit=async e=>{e.preventDefault();msg('Sending…');
+ const r=await api('login',{email:$('#email').value,code:$('#code').value});
+ r.ok?msg('Check your email for a sign-in link. It works once and expires in 15 minutes.'):msg(r.error,1)};
+$('#tokenBtn').onclick=async()=>{const r=await api('verify',{token:P.get('token')});
+ if(r.ok)location.replace('/account/');else{msg(r.error,1);$('#tokenBtn').hidden=true;$('#tokenView p').innerHTML='<a href="/account/">Request a new link</a>'}};
+$('#claimForm').onsubmit=async e=>{e.preventDefault();const r=await api('claim',{code:$('#newcode').value});
+ if(r.ok){msg(`Added ${r.added} sign${r.added==1?'':'s'} to your account.`);$('#newcode').value='';$('#claimForm').hidden=true;load()}else msg(r.error,1)};
+$('#out').onclick=async()=>{await api('logout',{});location.replace('/account/')};
+
+const ICON_OPEN='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>',
+ ICON_DOTS='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>';
+const closeMenus=()=>{document.querySelectorAll('.menu').forEach(m=>m.hidden=true);document.querySelectorAll('.dots').forEach(b=>b.setAttribute('aria-expanded','false'))};
+document.addEventListener('click',closeMenus);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenus()});
+function hintFor(v){            // gentle typo warnings; never blocks saving
+ v=String(v||'').trim();if(!v)return'';
+ if(/\s/.test(v))return"Addresses can't contain spaces.";
+ let u;try{u=new URL(/^[a-z][a-z0-9+.-]*:/i.test(v)?v:'https://'+v)}catch{return"This doesn't look like a web address."}
+ if(!/^https?:$/.test(u.protocol))return'Addresses should start with https://';
+ const h=u.hostname.toLowerCase(),tld=h.split('.').pop();
+ if(!h.includes('.')&&h!=='localhost')return'This address looks incomplete. Try something like yourlisting.com';
+ if(h.includes('..'))return"There's a double dot in this address.";
+ const fix={con:'com',vom:'com',xom:'com',ocm:'com',cmo:'com',comm:'com',coom:'com',cim:'com',nte:'net',ner:'net',ogr:'org',rog:'org'};
+ return fix[tld]?`Did you mean .${fix[tld]}? This address ends in .${tld}`:'';
+}
+function row(s){
+ let saved={l:s.label||'',d:s.destination||''};
+ const lab=el('input',{value:saved.l,maxlength:80,placeholder:'e.g. 1234 Pioneer Dr','aria-label':'Name'}),
+  dest=el('input',{value:saved.d,placeholder:'https://yourlisting.com',inputmode:'url','aria-label':'Where this sign sends people'}),
+  st=el('span',{class:'m'}),save=el('button',{},'Save'),dot=el('span',{class:'dot'}),hint=el('div',{class:'hint'}),
+  test=el('a',{class:'ib',target:'_blank',rel:'noopener noreferrer',title:'Test link (opens in a new tab)','aria-label':'Test link'}),
+  more=el('button',{class:'ib dots','aria-label':'More actions','aria-haspopup':'menu','aria-expanded':'false'}),
+  item=el('button',{role:'menuitem'},'Archive'),menu=el('div',{class:'menu',role:'menu',hidden:''},item),mn=el('div',{class:'mn'},more,menu);
+ test.innerHTML=ICON_OPEN;more.innerHTML=ICON_DOTS;
+ const status=()=>{dot.className='dot'+(saved.d?' on':'');dot.textContent=saved.d?'Live':'Paused';const okd=/^https?:\/\//.test(saved.d);test.classList.toggle('off',!okd);if(okd)test.href=saved.d;else test.removeAttribute('href')};status();save.disabled=true;
+ const hnt=()=>hint.textContent=hintFor(dest.value);hnt();
+ const chk=()=>{save.disabled=lab.value===saved.l&&dest.value===saved.d;if(!save.disabled){st.textContent='';save.classList.remove('done');save.textContent='Save'}};
+ const go=async()=>{if(save.disabled)return;st.textContent='Saving…';save.disabled=true;
+  const r=await api('sign',{id:s.id,label:lab.value,destination:dest.value});
+  if(r.ok){lab.value=lab.value.trim();dest.value=r.destination||'';saved={l:lab.value,d:dest.value};status();hnt();st.textContent='';save.classList.add('done');save.replaceChildren(el('span',{class:'ck'},'✓'),'Saved')}
+  else{chk();st.textContent=r.error||'Could not save.'}};
+ lab.oninput=chk;dest.oninput=()=>{chk();hnt()};save.onclick=go;[lab,dest].forEach(i=>i.onkeydown=e=>{if(e.key==='Enter')go()});
+ more.onclick=e=>{e.stopPropagation();const open=menu.hidden;closeMenus();menu.hidden=!open;more.setAttribute('aria-expanded',open)};
+ item.onclick=async()=>{closeMenus();if(!confirm(`Archive qrwip.com/${s.id}? Anyone who scans it will see a "retired" page. You can restore it anytime.`))return;
+  const r=await api('archive',{id:s.id,archived:true});r.ok?load():st.textContent=r.error||'Could not archive.'};
+ return el('div',{class:'rw'},el('div',{class:'sn'},el('b',{},s.id),dot),
+  el('div',{class:'nm'},el('span',{class:'lb'},'Name'),lab),el('div',{class:'ds'},el('span',{class:'lb'},'Sends people to'),dest,hint),
+  el('div',{class:'sc'},el('b',{},String(s.total)),el('span',{},`${s.week} this week`)),el('div',{class:'ac'},save,test,mn,st));
+}
+function archRow(s){
+ const b=el('button',{class:'g'},'Restore'),st=el('span',{class:'m'});
+ b.onclick=async()=>{b.disabled=true;const r=await api('archive',{id:s.id,archived:false});if(r.ok)load();else{b.disabled=false;st.textContent=r.error||'Could not restore.'}};
+ return el('div',{class:'rw ar'},el('div',{class:'sn'},el('b',{},s.id),el('span',{class:'dot'},'Archived')),
+  el('div',{class:'nm'},el('span',{class:'lb'},'Name'),el('div',{class:'ro'},s.label||'—')),el('div',{class:'ds'},el('span',{class:'lb'},'Sent people to'),el('div',{class:'ro'},s.destination||'—')),
+  el('div',{class:'sc'},el('b',{},String(s.total)),el('span',{},`${s.week} this week`)),el('div',{class:'ac'},b,st));
+}
+async function load(){const r=await api('signs'),box=$('#list'),ab=$('#archList');box.replaceChildren();ab.replaceChildren();
+ if(r.status==401)return show('loginView');
+ const act=r.signs.filter(x=>!x.archived_at),old=r.signs.filter(x=>x.archived_at),n=act.length;
+ $('#count').textContent=!r.signs.length?'No signs yet. Enter the claim code from the card in your box.':`${n} sign${n==1?'':'s'}${old.length?` · ${old.length} archived`:''}. Changes go live the moment you save.`;
+ $('.tbl').hidden=!n;$('#filter').hidden=n<7;if(!r.signs.length)$('#claimForm').hidden=false;
+ $('#arch').hidden=!old.length;$('#archSum').textContent=`Archived (${old.length})`;
+ act.forEach(x=>box.append(row(x)));old.forEach(x=>ab.append(archRow(x)))}
+$('#addBtn').onclick=()=>{const f=$('#claimForm');f.hidden=!f.hidden;if(!f.hidden)$('#newcode').focus()};
+$('#filter').oninput=e=>{const v=e.target.value.toLowerCase();
+ [...$('#list').children].forEach(r=>r.hidden=!(r.textContent+' '+[...r.querySelectorAll('input')].map(i=>i.value).join(' ')).toLowerCase().includes(v))};
+let gDone=0;
+async function initGoogle(){
+ if(gDone)return;gDone=1;const c=await api('config');if(!c.googleClientId)return;
+ await new Promise((ok,no)=>{const t=el('script',{src:'https://accounts.google.com/gsi/client',async:''});t.onload=ok;t.onerror=no;document.head.append(t)}).catch(()=>{});
+ if(!window.google)return;
+ google.accounts.id.initialize({client_id:c.googleClientId,callback:async x=>{msg('Signing in…');const r=await api('google',{credential:x.credential,code:$('#code').value});r.ok?location.replace('/account/'):msg(r.error,1)}});
+ google.accounts.id.renderButton($('#gbtn'),{theme:'outline',size:'large',text:'continue_with',shape:'rectangular',width:Math.min(350,$('#loginView .card').clientWidth-48)});$('#gwrap').hidden=false}
+(async()=>{
+ if(P.get('token'))return show('tokenView');
+ const me=await api('me');
+ if(me.ok){$('#who').textContent=me.email;$('#out').hidden=false;$('#newcode').value=P.get('code')||'';if(P.get('code'))$('#claimForm').hidden=false;show('dashView');load()}
+ else{show('loginView');if(P.get('code')){$('#code').value=P.get('code');revealCode()}initGoogle()}
+})();
+</script></body></html>
