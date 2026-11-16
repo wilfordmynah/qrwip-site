@@ -1,5 +1,5 @@
-import { sendMail, shippedEmail } from '../_lib/mail.js';
-import { stockInfo, loadBatch, createOrder, listOrders, setStatus, listReserved, saveReserved } from '../_lib/orders.js';
+import { sendMail, shippedEmail, signInEmail, transferEmail } from '../_lib/mail.js';
+import { stockInfo, loadBatch, createOrder, listOrders, setStatus, listReserved, saveReserved, createTransfer, cancelTransfer } from '../_lib/orders.js';
 // All /api/* routes: login, claim, list signs, update a sign.
 const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
 const sha = async s => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
@@ -23,12 +23,8 @@ async function verifyGoogle(token, env) {          // checks Google's signature 
   return ok ? { email: String(pay.email).toLowerCase() } : null;
 }
 
-async function sendEmail(env, to, link) {
-  if (env.RESEND_API_KEY) {
-    const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ from: env.MAIL_FROM || 'QRwip <login@qrwip.com>', to, subject: 'Your QRwip sign-in link', text: `Sign in to QRwip (works once, expires in 15 minutes):\n\n${link}` }) });
-    return r.ok;
-  }
+async function sendEmail(env, to, link) {          // the sign-in email
+  if (env.RESEND_API_KEY) { const m = signInEmail(link, new URL(link).origin); return sendMail(env, { to, subject: m.subject, text: m.text, html: m.html }); }
   if (env.DEV_LOGIN === '1') { console.log(`\n=== SIGN-IN LINK for ${to} ===\n${link}\n`); return true; }   // local testing only
   return false;
 }
@@ -106,7 +102,17 @@ export async function onRequest({ request, env }) {
         const r = await createOrder(env, { kind: body.kind, qty: body.qty, name: String(body.name || '').slice(0, 120), email: String(body.email || '').slice(0, 254), ship_to: String(body.ship_to || '').slice(0, 500), color: body.color, note: String(body.note || '').slice(0, 300) });
         return json(r, r.error ? 400 : 200);
       }
-      if (path === 'admin/reserved') return json({ signs: await listReserved(env) });
+      if (path === 'admin/messages') return json({ messages: (await env.DB.prepare('SELECT id, created_at, name, email, company, topic, message, emailed FROM contact_messages ORDER BY id DESC LIMIT 50').all()).results });
+      if (path === 'admin/reserved') return json({ signs: await listReserved(env, user.id) });
+      if (path === 'admin/transfer') {
+        const r = await createTransfer(env, user.id, body.id, body.email, String(body.name || '').slice(0, 120), String(body.note || '').slice(0, 400));
+        if (r.error) return json({ error: r.error }, 400);
+        const m = transferEmail({ code: r.code, signId: r.signId, name: String(body.name || '').slice(0, 120), note: String(body.note || '').slice(0, 400), fromName: 'QRwip' }, url.origin);
+        let emailed = false, emailError = '';
+        try { emailed = await sendMail(env, { to: String(body.email).trim().toLowerCase(), subject: m.subject, text: m.text, html: m.html }); if (!emailed) emailError = 'The email service did not accept the message.'; } catch (e) { emailError = String(e && e.message || e).slice(0, 200); }
+        return json({ ok: true, emailed, emailError, code: r.code, link: `${url.origin}/account/?code=${r.code}` });
+      }
+      if (path === 'admin/transfer-cancel') return (await cancelTransfer(env, user.id, body.orderId)) ? json({ ok: true }) : json({ error: 'Nothing to cancel.' }, 404);
       if (path === 'admin/reserved-save') {
         const dest = cleanUrl(body.destination);
         if (dest === null) return json({ error: 'Enter a valid web address, like https://yourlisting.com' }, 400);
@@ -114,12 +120,12 @@ export async function onRequest({ request, env }) {
       }
       if (path === 'admin/status') {
         if (!await setStatus(env, body.id, body.status, String(body.tracking || '').slice(0, 200))) return json({ error: 'Order not found.' }, 404);
-        let emailed = false;
-        if (body.status === 'shipped' && body.notify) {          // optional "your order shipped" email
-          const o = await env.DB.prepare('SELECT id, customer_name, customer_email, tracking, claim_code FROM orders WHERE id=?').bind(+body.id).first();
-          if (o && o.customer_email) { const m = shippedEmail(o, url.origin); emailed = await sendMail(env, { to: o.customer_email, subject: m.subject, text: m.text }); }
-        }
-        return json({ ok: true, emailed });
+        let emailed = false, emailError = '';
+        if (body.status === 'shipped' && body.notify) try {          // optional "your order shipped" email
+          const o = await env.DB.prepare(`SELECT id, customer_name, customer_email, tracking, claim_code, (SELECT COUNT(*) FROM signs WHERE order_id=orders.id) AS qty, (SELECT GROUP_CONCAT(id, ', ') FROM (SELECT id FROM signs WHERE order_id=orders.id ORDER BY id)) AS signs FROM orders WHERE id=?`).bind(+body.id).first();
+          if (o && o.customer_email) { const m = shippedEmail(o, url.origin); emailed = await sendMail(env, { to: o.customer_email, subject: m.subject, text: m.text, html: m.html }); if (!emailed) emailError = 'The email service did not accept the message.'; } else emailError = 'This order has no customer email.';
+        } catch (e) { emailError = String(e && e.message || e).slice(0, 200); }
+        return json({ ok: true, emailed, emailError });
       }
       return json({ error: 'Not found' }, 404);
     }
@@ -149,5 +155,5 @@ export async function onRequest({ request, env }) {
       return r.meta.changes ? json({ ok: true, destination: dest }) : json({ error: 'Sign not found.' }, 404);
     }
     return json({ error: 'Not found' }, 404);
-  } catch (e) { return json({ error: 'Something went wrong. Please try again.' }, 500); }
+  } catch (e) { return json({ error: 'Something went wrong. Please try again.', ...(path.startsWith('admin/') ? { detail: String(e && e.message || e).slice(0, 300) } : {}) }, 500); }
 }

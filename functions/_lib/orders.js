@@ -60,14 +60,45 @@ export async function setStatus(env, id, status, tracking) {
   return r.meta.changes > 0;
 }
 
-export async function listReserved(env) {
-  const r = await env.DB.prepare(`SELECT s.id, s.label, s.destination, s.owner_id, (SELECT COUNT(*) FROM scans c WHERE c.sign_id=s.id) AS total
-    FROM signs s WHERE s.reserved=1 ORDER BY s.id`).all();
-  return r.results;
+export async function listReserved(env, adminId) {
+  const r = await env.DB.prepare(`SELECT s.id, s.label, s.destination, s.owner_id, u.email AS owner_email,
+      (SELECT COUNT(*) FROM scans c WHERE c.sign_id=s.id) AS total,
+      (SELECT o.customer_email FROM orders o WHERE o.id=s.order_id AND o.kind='transfer' AND o.claimed_by IS NULL AND o.status<>'cancelled') AS pending_email,
+      (SELECT o.id FROM orders o WHERE o.id=s.order_id AND o.kind='transfer' AND o.claimed_by IS NULL AND o.status<>'cancelled') AS pending_order
+    FROM signs s LEFT JOIN users u ON u.id=s.owner_id WHERE s.reserved=1 ORDER BY s.id`).all();
+  return r.results.map(x => ({ ...x, mine: x.owner_id == null || x.owner_id === adminId }));
 }
-// Reserved signs belong to the admin, so they also show up in the admin's own account.
+// Reserved signs belong to the admin until they are sent to someone, so they also show up in the admin's own account.
 export async function saveReserved(env, adminId, id, label, destination) {
-  const r = await env.DB.prepare('UPDATE signs SET label=?, destination=?, owner_id=?, updated_at=? WHERE id=? AND reserved=1')
-    .bind(label || null, destination || null, adminId, Date.now(), String(id)).run();
+  const r = await env.DB.prepare('UPDATE signs SET label=?, destination=?, owner_id=?, updated_at=? WHERE id=? AND reserved=1 AND (owner_id IS NULL OR owner_id=?)')
+    .bind(label || null, destination || null, adminId, Date.now(), String(id), adminId).run();
   return r.meta.changes > 0;
+}
+
+// Give one of your own signs to someone else: they get an email with a link to claim it. The sign keeps working meanwhile.
+export async function createTransfer(env, adminId, signId, email, name, note) {
+  email = String(email || '').trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'Enter a valid email address.' };
+  const sign = await env.DB.prepare('SELECT id, owner_id, destination FROM signs WHERE id=?').bind(String(signId)).first();
+  if (!sign) return { error: 'Sign not found.' };
+  if (sign.owner_id != null && sign.owner_id !== adminId) return { error: 'This sign already belongs to someone else.' };
+  const pending = await env.DB.prepare(`SELECT o.id FROM orders o WHERE o.id=(SELECT order_id FROM signs WHERE id=?) AND o.kind='transfer' AND o.claimed_by IS NULL AND o.status<>'cancelled'`).bind(sign.id).first();
+  if (pending) return { error: 'This sign is already waiting to be claimed. Cancel that first.' };
+  const raw = [...crypto.getRandomValues(new Uint8Array(12))].map(x => ALPHA[x % 32]).join('');
+  const code = `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8)}`;
+  const ins = await env.DB.prepare(`INSERT INTO orders (claim_hash, claim_code, note, created_at, status, kind, customer_name, customer_email) VALUES (?,?,?,?,?,?,?,?)`)
+    .bind(await sha(raw), code, note || null, Date.now(), 'done', 'transfer', name || null, email).run();
+  // the sign stays owned by you (so it keeps redirecting) until they claim it
+  await env.DB.prepare('UPDATE signs SET order_id=?, owner_id=COALESCE(owner_id, ?) WHERE id=?').bind(ins.meta.last_row_id, adminId, sign.id).run();
+  return { ok: true, orderId: ins.meta.last_row_id, code, signId: sign.id, hasDestination: !!sign.destination };
+}
+
+export async function cancelTransfer(env, adminId, orderId) {
+  const o = await env.DB.prepare(`SELECT id FROM orders WHERE id=? AND kind='transfer' AND claimed_by IS NULL AND status<>'cancelled'`).bind(+orderId).first();
+  if (!o) return false;
+  const dead = [...crypto.getRandomValues(new Uint8Array(16))].map(x => x.toString(16).padStart(2, '0')).join('');
+  await env.DB.batch([
+    env.DB.prepare(`UPDATE orders SET status='cancelled', claim_code=NULL, claim_hash=? WHERE id=?`).bind('cancelled-' + dead, o.id),
+    env.DB.prepare('UPDATE signs SET order_id=NULL WHERE order_id=? AND owner_id=?').bind(o.id, adminId)]);
+  return true;
 }

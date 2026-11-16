@@ -38,7 +38,7 @@ a{color:inherit}
 <div class="w" id="app"><p class="m" id="msg">Loading…</p></div>
 <script>
 const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const api=async(p,b)=>{const r=await fetch('/api/'+p,b?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b)}:{});const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(j.error||'Error'),{status:r.status});return j};
+const api=async(p,b)=>{const r=await fetch('/api/'+p,b?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b)}:{});const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error((j.error||'Error')+(j.detail?' ('+j.detail+')':'')),{status:r.status});return j};
 const fmt=t=>new Date(t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
 async function init(){
   try{await api('me')}catch(e){return $('#app').innerHTML='<div class="card"><h1>QRwip admin</h1><p class="m">Please <a href="/account/">sign in</a> with your admin account, then come back to this page.</p></div>'}
@@ -58,6 +58,7 @@ async function init(){
   <div class="card"><h2>Load a batch of standard signs</h2><p class="m" style="margin-bottom:12px">After you print a batch, enter its number range so the site can hand those numbers out. Numbers 0001–0010 are reserved.</p>
    <form id="bf" class="row"><label>First number<input name="first" type="number" placeholder="11" style="width:110px"></label><label>Last number<input name="last" type="number" placeholder="200" style="width:110px"></label><button>Add to stock</button></form><div id="bres"></div></div>
   <div class="card"><h2>Orders</h2><div id="orders"></div></div>
+  <details class="card" id="msgbox"><summary><h2 style="display:inline">Messages</h2> <span class="m" id="msgcount"></span></summary><div style="height:12px"></div><div id="msgs"></div></details>
   <details class="card" id="resbox"><summary><h2 style="display:inline">Reserved signs (0001–0010)</h2></summary><div style="height:12px"></div><p class="m" style="margin-bottom:12px">Your own signs and demos. Set where each one sends people. They also show up in your own account.</p><div id="res"></div></details>`;
   $('#of').kind.onchange=e=>$('#colorL').classList.toggle('hide',e.target.value!=='custom');
   $('#of').onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));$('#ores').innerHTML='';
@@ -78,7 +79,7 @@ async function load(){
    <div class="stat"><b>${esc(s.nextStandard||'—')}</b><span>next standard number</span></div>
    <div class="stat"><b>${s.ordersToShip}</b><span>orders to ship</span></div>
    <div class="stat"><b>${s.customMade}</b><span>custom signs${s.lastCustom?' (last '+esc(s.lastCustom)+')':''}</span></div>`;
-  loadRes();
+  loadRes();loadMsgs();
   const {orders}=await api('admin/orders');
   window.ORDERS=orders;
   const ordered=[...orders.filter(o=>!done(o)),...orders.filter(done)];
@@ -99,18 +100,29 @@ function odetail(o){return `<div class="oh"><div><b>#${o.id}</b> · ${esc(o.cust
     <div class="row">${o.claim_code?`<button class="s" onclick='card(${JSON.stringify(o.claim_code)},${(o.signs||'').split(', ').filter(Boolean).length})'>Print claim card</button>`:''}
     ${o.status==='new'?`<button class="s" onclick="st(${o.id},'making')">Mark making</button>`:''}${o.status==='making'?`<button class="s" onclick="st(${o.id},'new')">Back to new</button>`:''}
     ${!done(o)?`<button class="s" onclick="ship(${o.id})">Mark shipped…</button>`:`<button class="s" onclick="st(${o.id},'new')">Reopen</button>`}</div>`}
+async function loadMsgs(){try{const {messages}=await api('admin/messages');$('#msgcount').textContent=messages.length?'('+messages.length+')':'';
+  $('#msgs').innerHTML=messages.length?messages.map(m=>`<div class="o"><div class="oh"><div><b>${esc(m.name)}</b> <a href="mailto:${esc(m.email)}">${esc(m.email)}</a></div><span class="m">${fmt(m.created_at)}</span></div>
+   <div class="m">${esc(m.topic||'')}${m.company?' · '+esc(m.company):''}${m.emailed?'':' · email not sent'}</div><div style="white-space:pre-wrap">${esc(m.message||'(no message)')}</div></div>`).join(''):'<p class="m">No messages yet.</p>'}catch(e){}}
 async function loadRes(){const {signs}=await api('admin/reserved');
-  $('#res').innerHTML=signs.map(x=>`<form class="row" style="margin-bottom:8px" onsubmit="return saveRes(event,'${esc(x.id)}')"><b style="width:44px;padding-bottom:10px">${esc(x.id)}</b>
-   <label style="width:150px">Name<input name="label" value="${esc(x.label)}" placeholder="optional"></label>
-   <label style="flex:1;min-width:200px">Sends people to<input name="destination" value="${esc(x.destination)}" placeholder="https://"></label>
+  $('#res').innerHTML=signs.map(x=>{const gone=!x.mine;
+   return `<div style="margin-bottom:14px"><form class="row" onsubmit="return saveRes(event,'${esc(x.id)}')"><b style="width:44px;padding-bottom:10px">${esc(x.id)}</b>
+   <label style="width:150px">Name<input name="label" value="${esc(x.label)}" placeholder="optional" ${gone?'disabled':''}></label>
+   <label style="flex:1;min-width:200px">Sends people to<input name="destination" value="${esc(x.destination)}" placeholder="https://" ${gone?'disabled':''}></label>
    <span class="m" style="padding-bottom:10px;width:70px">${x.total} scans</span>
-   <button class="s">Save</button> ${x.destination?`<a class="m" style="padding-bottom:10px" href="/${esc(x.id)}" target="_blank">Test</a>`:''}</form>`).join('')}
+   ${gone?'':'<button class="s">Save</button>'} ${x.destination?`<a class="m" style="padding-bottom:10px" href="/${esc(x.id)}" target="_blank">Test</a>`:''}</form>
+   <div class="m" style="margin:6px 0 0 54px">${gone?`Belongs to <b>${esc(x.owner_email||'someone else')}</b>`:x.pending_email?`Sent to <b>${esc(x.pending_email)}</b>, waiting to be claimed. <button class="s" onclick="cancelTr(${x.pending_order})">Cancel</button>`:`<button class="s" onclick="sendTr('${esc(x.id)}')">Send to someone…</button>`}</div></div>`}).join('')}
+async function sendTr(id){const email=prompt('Email address of the person who should get sign '+id+':');if(!email)return;
+  const name=prompt('Their name (optional):')||'',note=prompt('A short personal note to include (optional):')||'';
+  if(!confirm('Send sign '+id+' to '+email+'? They will get an email with a link to claim it. It keeps working until they do.'))return;
+  try{const r=await api('admin/transfer',{id,email,name,note});await loadRes();await load();
+    alert(r.emailed?'Sent! '+email+' has been emailed a link to claim sign '+id+'.':'Created, but the email was not sent ('+(r.emailError||'unknown reason')+'). You can send them this link yourself:\n\n'+r.link)}catch(e){alert('Could not send: '+e.message)}}
+async function cancelTr(orderId){if(!confirm('Cancel this transfer? The link in their email will stop working, and the sign stays yours.'))return;try{await api('admin/transfer-cancel',{orderId});await loadRes();await load()}catch(e){alert(e.message)}}
 async function saveRes(e,id){e.preventDefault();const f=Object.fromEntries(new FormData(e.target)),b=e.target.querySelector('button');
   try{await api('admin/reserved-save',{id,...f});b.textContent='Saved ✓';setTimeout(loadRes,900)}catch(x){alert(x.message)}return false}
 async function st(id,status,tracking){try{await api('admin/status',{id,status,tracking});await load()}catch(e){alert('Could not update: '+e.message)}}
 async function ship(id){const t=prompt('Tracking number (optional)');if(t===null)return;
   const o=window.ORDERS&&window.ORDERS.find(x=>x.id===id),notify=!!(o&&o.customer_email)&&confirm('Email '+o.customer_email+' to say it shipped?');
-  try{const r=await api('admin/status',{id,status:'shipped',tracking:t,notify});await load();if(notify&&!r.emailed)alert('Marked shipped, but the email could not be sent (email sign-in/Resend may not be set up yet).')}catch(e){alert('Could not update: '+e.message)}}
+  try{const r=await api('admin/status',{id,status:'shipped',tracking:t,notify});await load();if(notify&&!r.emailed)alert('Marked shipped, but the email was not sent: '+(r.emailError||'unknown reason'))}catch(e){alert('Could not update: '+e.message)}}
 function card(code,n){const w=open('','_blank');if(!w)return alert('Allow pop-ups to print the card.');
   const url='https://www.qrwip.com/claim?code='+code;
   w.document.write(`<!doctype html><meta charset=utf-8><title>Claim card</title><style>body{font:14px/1.4 system-ui,sans-serif;margin:24px}.c{display:flex;gap:16px;align-items:center;width:3.5in;height:2in;border:1px dashed #999;border-radius:10px;padding:.15in;box-sizing:border-box}h1{font-size:15px;margin:0 0 4px}.k{font:700 17px ui-monospace,monospace;letter-spacing:.04em;margin:6px 0}p{margin:0;color:#555;font-size:11px}</style><div class=c><div id=q></div><div><h1>Activate your QRwips</h1><p>Scan, or go to qrwip.com/claim and enter:</p><div class=k>${code}</div><p>${n} sign${n>1?'s':''} in this box</p></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><script>new QRCode(document.getElementById('q'),{text:${JSON.stringify(url)},width:110,height:110});setTimeout(()=>print(),500)<\/script>`);w.document.close()}

@@ -146,7 +146,7 @@ form .btn{justify-self:start}
 footer{background:var(--ink);padding:40px 0;color:#c9ccd2}
 footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
 footer img{height:28px;width:auto}
-footer a{text-decoration:none}footer .fl{display:flex;gap:22px;flex-wrap:wrap}
+.fnote{margin-top:10px;font-size:.92rem}footer a{text-decoration:none}footer .fl{display:flex;gap:22px;flex-wrap:wrap}
 footer a:hover{color:#fff}
 
 @media(max-width:860px){
@@ -296,7 +296,7 @@ summary:hover:after{transform:scale(1.2)}
     <div><span>10+ signs</span><span>15% off · $24.65 each</span></div>
     <div><span>25+ signs</span><span>20% off · $23.20 each</span></div>
    </div>
-   <a class="btn" href="#contact">Get your QRwip</a>
+   <a class="btn" href="/order/">Get your QRwip</a>
    <small>Standard signs typically ship within 1–2 business days. Custom designs take longer.</small>
    <small>Want your logo and brand colors on the sign? <a href="#contact"><u>Request a custom design quote</u></a>.</small>
   </div>
@@ -331,6 +331,7 @@ summary:hover:after{transform:scale(1.2)}
     <select name="topic"><option>I want a QRwip for a property</option><option>I want several QRwips</option><option>I have a question</option><option>Something else</option></select>
    </label>
    <label>Message<textarea name="msg" placeholder="Have a question or idea? Tell us how we can help."></textarea></label>
+   <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0">
    <button class="btn" type="submit">Send message</button>
   </form>
   <p class="found">Are you the agent on a listing with a QRwip sign? <a href="mailto:hello@qrwip.com?subject=I%20found%20a%20QRwip">Say hello</a> and we'll tell you how it works.</p>
@@ -366,10 +367,14 @@ tabs.addEventListener('keydown',e=>{
 });
 show(0,false);
 
-document.getElementById('form').addEventListener('submit',e=>{
- e.preventDefault();const f=new FormData(e.target);
- const body=`Name: ${f.get('first')} ${f.get('last')}\nEmail: ${f.get('email')}\nCompany: ${f.get('company')||'-'}\n\n${f.get('msg')||''}`;
- location.href=`mailto:hello@qrwip.com?subject=${encodeURIComponent('QRwip: '+f.get('topic'))}&body=${encodeURIComponent(body)}`;
+document.getElementById('form').addEventListener('submit',async e=>{
+ e.preventDefault();const form=e.target,btn=form.querySelector('button'),old=btn.textContent;
+ let note=form.querySelector('.fnote');if(!note){note=document.createElement('p');note.className='fnote';form.appendChild(note)}
+ btn.disabled=true;btn.textContent='Sending…';note.textContent='';
+ try{const r=await fetch('/api/contact',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(form)))});const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||'Something went wrong. Please email hello@qrwip.com.');
+  form.reset();btn.textContent='Sent ✓';note.style.color='#3b6b00';note.textContent="Thanks! We'll get back to you soon.";setTimeout(()=>{btn.textContent=old;btn.disabled=false},4000)}
+ catch(x){note.style.color='#b3261e';note.textContent=x.message;btn.textContent=old;btn.disabled=false}
 });
 </script>
 <script>
