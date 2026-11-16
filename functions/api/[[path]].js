@@ -1,3 +1,4 @@
+import { sendMail, shippedEmail } from '../_lib/mail.js';
 import { stockInfo, loadBatch, createOrder, listOrders, setStatus, listReserved, saveReserved } from '../_lib/orders.js';
 // All /api/* routes: login, claim, list signs, update a sign.
 const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
@@ -111,7 +112,15 @@ export async function onRequest({ request, env }) {
         if (dest === null) return json({ error: 'Enter a valid web address, like https://yourlisting.com' }, 400);
         return (await saveReserved(env, user.id, body.id, String(body.label || '').trim().slice(0, 80), dest)) ? json({ ok: true, destination: dest }) : json({ error: 'Sign not found.' }, 404);
       }
-      if (path === 'admin/status') return (await setStatus(env, body.id, body.status, String(body.tracking || '').slice(0, 200))) ? json({ ok: true }) : json({ error: 'Order not found.' }, 404);
+      if (path === 'admin/status') {
+        if (!await setStatus(env, body.id, body.status, String(body.tracking || '').slice(0, 200))) return json({ error: 'Order not found.' }, 404);
+        let emailed = false;
+        if (body.status === 'shipped' && body.notify) {          // optional "your order shipped" email
+          const o = await env.DB.prepare('SELECT id, customer_name, customer_email, tracking, claim_code FROM orders WHERE id=?').bind(+body.id).first();
+          if (o && o.customer_email) { const m = shippedEmail(o, url.origin); emailed = await sendMail(env, { to: o.customer_email, subject: m.subject, text: m.text }); }
+        }
+        return json({ ok: true, emailed });
+      }
       return json({ error: 'Not found' }, 404);
     }
 

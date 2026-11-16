@@ -55,8 +55,8 @@ export async function listOrders(env) {
 export async function setStatus(env, id, status, tracking) {
   if (!['new', 'making', 'shipped', 'done', 'needs_attention'].includes(status)) return false;
   const shipped = status === 'shipped';
-  const r = await env.DB.prepare('UPDATE orders SET status=?, tracking=COALESCE(?,tracking), shipped_at=CASE WHEN ? THEN ? ELSE shipped_at END, claim_code=CASE WHEN ? THEN NULL ELSE claim_code END WHERE id=?')
-    .bind(status, tracking || null, shipped ? 1 : 0, Date.now(), shipped ? 1 : 0, +id).run();
+  const r = await env.DB.prepare('UPDATE orders SET status=?, tracking=COALESCE(?,tracking), shipped_at=CASE WHEN ? THEN ? ELSE shipped_at END WHERE id=?')
+    .bind(status, tracking || null, shipped ? 1 : 0, Date.now(), +id).run();   // claim code is kept so you can reprint it if a customer loses theirs
   return r.meta.changes > 0;
 }
 
