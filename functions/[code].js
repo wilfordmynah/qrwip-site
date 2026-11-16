@@ -8,8 +8,8 @@ const page = (title, msg, status = 200) => new Response(
 
 export async function onRequestGet(context) {
   const { params, env, request, next } = context;
-  const id = params.code;
-  if (!/^\d{4,6}$/.test(id)) return next();            // not a sign number
+  const id = String(params.code).toUpperCase();
+  if (!/^(\d{4,6}|Q\d{4,6})$/.test(id)) return next();            // not a sign number
   const log = () => { try {                              // log the scan, but never let logging break the redirect
     context.waitUntil(env.DB.prepare('INSERT INTO scans (sign_id, ts, country) VALUES (?, ?, ?)')
       .bind(id, Date.now(), request.headers.get('cf-ipcountry')).run().catch(() => {}));

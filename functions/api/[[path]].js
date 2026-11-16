@@ -1,3 +1,4 @@
+import { stockInfo, loadBatch, createOrder, listOrders, setStatus, listReserved, saveReserved } from '../_lib/orders.js';
 // All /api/* routes: login, claim, list signs, update a sign.
 const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
 const sha = async s => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
@@ -93,6 +94,26 @@ export async function onRequest({ request, env }) {
     const tok = /(?:^|;\s*)qrwip_session=([a-f0-9]+)/.exec(request.headers.get('cookie') || '');
     const user = tok && await q('SELECT u.id, u.email FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?', await sha(tok[1]), now).first();
     if (!user) return json({ error: 'Please sign in.' }, 401);
+
+    if (path.startsWith('admin/')) {                  // owner-only tools; anyone else just sees "Not found"
+      const admins = String(env.ADMIN_EMAILS || '').toLowerCase().split(',').map(x => x.trim()).filter(Boolean);
+      if (!admins.includes(user.email)) return json({ error: 'Not found' }, 404);
+      if (path === 'admin/summary') return json(await stockInfo(env));
+      if (path === 'admin/orders') return json({ orders: await listOrders(env) });
+      if (path === 'admin/batch') { const r = await loadBatch(env, body.first, body.last); return json(r, r.error ? 400 : 200); }
+      if (path === 'admin/order') {
+        const r = await createOrder(env, { kind: body.kind, qty: body.qty, name: String(body.name || '').slice(0, 120), email: String(body.email || '').slice(0, 254), ship_to: String(body.ship_to || '').slice(0, 500), color: body.color, note: String(body.note || '').slice(0, 300) });
+        return json(r, r.error ? 400 : 200);
+      }
+      if (path === 'admin/reserved') return json({ signs: await listReserved(env) });
+      if (path === 'admin/reserved-save') {
+        const dest = cleanUrl(body.destination);
+        if (dest === null) return json({ error: 'Enter a valid web address, like https://yourlisting.com' }, 400);
+        return (await saveReserved(env, user.id, body.id, String(body.label || '').trim().slice(0, 80), dest)) ? json({ ok: true, destination: dest }) : json({ error: 'Sign not found.' }, 404);
+      }
+      if (path === 'admin/status') return (await setStatus(env, body.id, body.status, String(body.tracking || '').slice(0, 200))) ? json({ ok: true }) : json({ error: 'Order not found.' }, 404);
+      return json({ error: 'Not found' }, 404);
+    }
 
     if (path === 'me') return json({ email: user.email });
     if (path === 'logout') { await q('DELETE FROM sessions WHERE token_hash=?', await sha(tok[1])).run(); return json({ ok: true }, 200, { 'set-cookie': 'qrwip_session=; Path=/; Max-Age=0' }); }

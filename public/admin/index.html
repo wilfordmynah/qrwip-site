@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>QRwip admin</title>
+<link rel="icon" href="/images/favicon.png">
+<style>
+:root{--ink:#0b0d10;--gray:#5c6068;--line:#e4e6ea;--fog:#f4f5f6;--lime:#b8f000;--r:12px}
+*{box-sizing:border-box;margin:0}
+body{font:15px/1.5 Inter,system-ui,sans-serif;color:var(--ink);background:var(--fog);padding:24px 16px 80px}
+.w{max-width:1000px;margin:0 auto;display:grid;gap:16px}
+h1{font-size:1.6rem;letter-spacing:-.03em}h2{font-size:1.05rem;margin-bottom:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}.stat b{display:block;font-size:1.6rem;letter-spacing:-.02em}.stat span{color:var(--gray);font-size:.85rem}
+.warn{border-color:#e0a800;background:#fff8e0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+label{display:grid;gap:4px;font-size:.82rem;font-weight:600}
+input,select,textarea{font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;min-width:0}
+textarea{resize:vertical}
+button{font:600 .9rem Inter,sans-serif;border:0;border-radius:10px;padding:10px 16px;cursor:pointer;background:var(--lime);color:#000}
+button.s{background:#fff;border:1px solid var(--line);padding:7px 12px;font-size:.82rem}
+.o{border-top:1px solid var(--line);padding:14px 0;display:grid;gap:6px}.o:first-child{border-top:0}
+.oh{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.qty{display:inline-block;border-radius:6px;padding:2px 10px;font-size:.8rem;font-weight:700;background:var(--ink);color:#fff}
+.tag{display:inline-block;border-radius:6px;padding:2px 8px;font-size:.75rem;font-weight:600;background:var(--fog)}
+.tag.new,.tag.needs_attention{background:#fff1b8}.tag.shipped,.tag.done{background:#dff7c4}
+.sw{display:inline-block;width:14px;height:14px;border-radius:4px;border:1px solid var(--line);vertical-align:-2px;margin-right:4px}
+.m{color:var(--gray);font-size:.88rem;white-space:pre-line}
+.ok{background:#f1fbd9;border:1px solid #cfe98a;border-radius:var(--r);padding:12px 14px}
+.err{color:#b3261e;font-size:.88rem}
+.code{font:700 1.2rem ui-monospace,monospace;letter-spacing:.05em}
+.hide{display:none!important}
+summary{cursor:pointer;list-style:none}summary::-webkit-details-marker{display:none}summary h2{margin:0}summary:after{content:"  +";color:var(--gray)}details[open]>summary:after{content:"  –"}
+.pv{display:flex;gap:12px;align-items:center}.pv img{width:64px;height:auto;display:block;filter:drop-shadow(0 1px 3px rgba(0,0,0,.2))}.sw{width:18px;height:18px}
+a{color:inherit}
+</style></head><body>
+<div class="w" id="app"><p class="m" id="msg">Loading…</p></div>
+<script>
+const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const api=async(p,b)=>{const r=await fetch('/api/'+p,b?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b)}:{});const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(j.error||'Error'),{status:r.status});return j};
+const fmt=t=>new Date(t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+async function init(){
+  try{await api('me')}catch(e){return $('#app').innerHTML='<div class="card"><h1>QRwip admin</h1><p class="m">Please <a href="/account/">sign in</a> with your admin account, then come back to this page.</p></div>'}
+  try{await api('admin/summary')}catch(e){return $('#app').innerHTML='<div class="card"><h1>Not found</h1><p class="m">This account is not an admin.</p></div>'}
+  $('#app').innerHTML=`
+  <div class="top"><h1>QRwip admin</h1><a href="/account/" class="m">My signs →</a></div>
+  <div class="stats" id="stats"></div>
+  <div class="card"><h2>Create an order</h2><p class="m" style="margin-bottom:12px">Use this for orders you take by hand. Standard orders pull the next numbers from stock. Custom orders get new Q-numbers.</p>
+   <form id="of" class="row">
+    <label>Type<select name="kind"><option value="standard">Standard (from stock)</option><option value="custom">Custom color (Q-numbers)</option></select></label>
+    <label>Quantity<input name="qty" type="number" min="1" max="500" value="1" style="width:90px"></label>
+    <label id="colorL" class="hide">Color (hex)<input name="color" placeholder="#b8f000" style="width:110px"></label>
+    <label>Name<input name="name"></label><label>Email<input name="email" type="email"></label>
+    <label style="flex:1;min-width:220px">Ship to<textarea name="ship_to" rows="2"></textarea></label>
+    <label style="flex:1;min-width:160px">Note<input name="note"></label>
+    <button>Create order</button></form><div id="ores"></div></div>
+  <div class="card"><h2>Load a batch of standard signs</h2><p class="m" style="margin-bottom:12px">After you print a batch, enter its number range so the site can hand those numbers out. Numbers 0001–0010 are reserved.</p>
+   <form id="bf" class="row"><label>First number<input name="first" type="number" placeholder="11" style="width:110px"></label><label>Last number<input name="last" type="number" placeholder="200" style="width:110px"></label><button>Add to stock</button></form><div id="bres"></div></div>
+  <div class="card"><h2>Orders</h2><div id="orders"></div></div>
+  <details class="card" id="resbox"><summary><h2 style="display:inline">Reserved signs (0001–0010)</h2></summary><div style="height:12px"></div><p class="m" style="margin-bottom:12px">Your own signs and demos. Set where each one sends people. They also show up in your own account.</p><div id="res"></div></details>`;
+  $('#of').kind.onchange=e=>$('#colorL').classList.toggle('hide',e.target.value!=='custom');
+  $('#of').onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));$('#ores').innerHTML='';
+    try{const r=await api('admin/order',f);const rng=r.ids.length>3?`${r.ids[0]} – ${r.ids.at(-1)} (${r.ids.length} signs)`:r.ids.join(', ');
+      $('#ores').innerHTML=`<div class="ok" style="margin-top:12px">Order #${r.orderId} created: <b>${esc(rng)}</b><br><span class="code">${esc(r.code)}</span> <button class="s" onclick='card(${JSON.stringify(r.code)},${r.ids.length})'>Print claim card</button></div>`;e.target.reset();load()}
+    catch(x){$('#ores').innerHTML=`<p class="err" style="margin-top:8px">${esc(x.message)}</p>`}};
+  $('#bf').onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));
+    try{const r=await api('admin/batch',f);$('#bres').innerHTML=`<p class="m" style="margin-top:8px">Added ${r.count} numbers to stock.</p>`;load()}catch(x){$('#bres').innerHTML=`<p class="err" style="margin-top:8px">${esc(x.message)}</p>`}};
+  load();
+}
+let SIGN='';
+fetch('/images/sign.svg').then(r=>r.text()).then(t=>{SIGN=t;load()}).catch(()=>{});
+const tint=h=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(SIGN.replace(/#b8f000/gi,h));
+async function load(){
+  if(!$('#stats'))return;
+  const s=await api('admin/summary');
+  $('#stats').innerHTML=`<div class="stat ${s.lowStock?'warn':''}"><b>${s.standardInStock}</b><span>standard signs in stock${s.lowStock?' – running low':''}</span></div>
+   <div class="stat"><b>${esc(s.nextStandard||'—')}</b><span>next standard number</span></div>
+   <div class="stat"><b>${s.ordersToShip}</b><span>orders to ship</span></div>
+   <div class="stat"><b>${s.customMade}</b><span>custom signs${s.lastCustom?' (last '+esc(s.lastCustom)+')':''}</span></div>`;
+  loadRes();
+  const {orders}=await api('admin/orders');
+  $('#orders').innerHTML=orders.length?orders.map(o=>`<div class="o"><div class="oh"><div><b>#${o.id}</b> · ${esc(o.customer_name||'(no name)')} <span class="m">${esc(o.customer_email||'')}</span></div>
+    <div><span class="qty">${o.qty} sign${o.qty==1?'':'s'}</span> <span class="tag ${esc(o.status)}">${esc(o.status.replace('_',' '))}</span> <span class="tag">${esc(o.kind)}</span>${o.claimed?' <span class="tag">claimed</span>':''}</div></div>
+    <div class="m">${fmt(o.created_at)}${o.amount_cents!=null?' · $'+(o.amount_cents/100).toFixed(2):''}</div>
+    <div>Signs: <b>${esc(o.signs||'none')}</b></div>${o.color_hex?`<div class="pv"><img alt="Sign preview in ${esc(o.color_hex)}" src="${tint(o.color_hex)}"><div><b>Custom color</b><br><span class="sw" style="background:${esc(o.color_hex)}"></span>${esc(o.color_hex.toUpperCase())}</div></div>`:''}
+    ${o.ship_to?`<div class="m">${esc(o.ship_to)}</div>`:''}${o.note?`<div class="m">Note: ${esc(o.note)}</div>`:''}${o.tracking?`<div class="m">Tracking: ${esc(o.tracking)}</div>`:''}
+    <div class="row">${o.claim_code?`<button class="s" onclick='card(${JSON.stringify(o.claim_code)},${(o.signs||'').split(', ').filter(Boolean).length})'>Print claim card</button>`:''}
+    ${o.status!=='shipped'&&o.status!=='done'?`<button class="s" onclick="st(${o.id},'making')">Mark making</button><button class="s" onclick="ship(${o.id})">Mark shipped…</button>`:''}</div></div>`).join(''):'<p class="m">No orders yet.</p>';
+}
+async function loadRes(){const {signs}=await api('admin/reserved');
+  $('#res').innerHTML=signs.map(x=>`<form class="row" style="margin-bottom:8px" onsubmit="return saveRes(event,'${esc(x.id)}')"><b style="width:44px;padding-bottom:10px">${esc(x.id)}</b>
+   <label style="width:150px">Name<input name="label" value="${esc(x.label)}" placeholder="optional"></label>
+   <label style="flex:1;min-width:200px">Sends people to<input name="destination" value="${esc(x.destination)}" placeholder="https://"></label>
+   <span class="m" style="padding-bottom:10px;width:70px">${x.total} scans</span>
+   <button class="s">Save</button> ${x.destination?`<a class="m" style="padding-bottom:10px" href="/${esc(x.id)}" target="_blank">Test</a>`:''}</form>`).join('')}
+async function saveRes(e,id){e.preventDefault();const f=Object.fromEntries(new FormData(e.target)),b=e.target.querySelector('button');
+  try{await api('admin/reserved-save',{id,...f});b.textContent='Saved ✓';setTimeout(loadRes,900)}catch(x){alert(x.message)}return false}
+async function st(id,status,tracking){await api('admin/status',{id,status,tracking});load()}
+function ship(id){const t=prompt('Tracking number (optional). The claim code is removed from the system once shipped, so print the card first.');if(t===null)return;st(id,'shipped',t)}
+function card(code,n){const w=open('','_blank');if(!w)return alert('Allow pop-ups to print the card.');
+  const url='https://www.qrwip.com/claim?code='+code;
+  w.document.write(`<!doctype html><meta charset=utf-8><title>Claim card</title><style>body{font:14px/1.4 system-ui,sans-serif;margin:24px}.c{display:flex;gap:16px;align-items:center;width:3.5in;height:2in;border:1px dashed #999;border-radius:10px;padding:.15in;box-sizing:border-box}h1{font-size:15px;margin:0 0 4px}.k{font:700 17px ui-monospace,monospace;letter-spacing:.04em;margin:6px 0}p{margin:0;color:#555;font-size:11px}</style><div class=c><div id=q></div><div><h1>Activate your QRwips</h1><p>Scan, or go to qrwip.com/claim and enter:</p><div class=k>${code}</div><p>${n} sign${n>1?'s':''} in this box</p></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><script>new QRCode(document.getElementById('q'),{text:${JSON.stringify(url)},width:110,height:110});setTimeout(()=>print(),500)<\/script>`);w.document.close()}
+init();
+</script></body></html>

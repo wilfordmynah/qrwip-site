@@ -8,4 +8,5 @@ database_name = "qrwip"
 database_id = "8389ce0e-ee57-47e7-b6b6-d49263ad8764"   # printed by: npx wrangler d1 create qrwip
 
 [vars]
+ADMIN_EMAILS = "wilfordmynah@gmail.com"
 GOOGLE_CLIENT_ID = "518914133317-0oj0nh9ufmpmmpegfs4gnvmiuo2k0lmf.apps.googleusercontent.com"
