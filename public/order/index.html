@@ -46,7 +46,7 @@ label{display:block;font-weight:600;font-size:.88rem;margin-bottom:8px}
  <div class="grid">
   <div class="card">
    <h2>1. Choose your sign</h2>
-   <div class="seg" id="kind"><button type="button" data-k="standard" aria-pressed="true">Standard<small>Lime and black, ships fast</small></button><button type="button" data-k="custom" aria-pressed="false">Custom color<small>Your brand color</small></button></div>
+   <div class="seg" id="kind"><button type="button" data-k="standard" aria-pressed="true">Standard<small>Lime and black, ships fast</small></button><button type="button" data-k="custom" aria-pressed="false">Custom color<small>Your brand color, +$5 per sign</small></button></div>
    <div id="colorBox" class="hide"><label>Border color</label>
     <div class="colors" id="sw"></div>
     <div class="colors"><input type="color" id="picker" value="#b8f000" aria-label="Pick a color"><input type="text" id="hex" value="#B8F000" maxlength="7" aria-label="Hex color"></div>
@@ -68,7 +68,7 @@ label{display:block;font-weight:600;font-size:.88rem;margin-bottom:8px}
 </div>
 <script>
 // Display only. The server recalculates the real price (functions/_lib/pricing.js) so change numbers in both places.
-const UNIT=2900,CUSTOM_FEE=0,TIERS=[[25,20],[10,15],[5,10]],SHIP=500,FREE=5;
+const UNIT=2900,CUSTOM_FEE=500,TIERS=[[25,20],[10,15],[5,10]],SHIP=500,FREE=5;
 const $=s=>document.querySelector(s),usd=c=>'$'+(c/100).toFixed(2);
 let kind='standard',color='#b8f000',SIGN='';
 const PRESET=['#b8f000','#0b3d91','#d62828','#f77f00','#2a9d8f','#7b2cbf','#111111'];

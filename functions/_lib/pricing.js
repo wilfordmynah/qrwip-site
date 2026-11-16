@@ -1,6 +1,6 @@
 // The ONE place prices live on the server. (public/order/index.html shows the same numbers for display only.)
 export const UNIT_CENTS = 2900;                         // $29 early-adopter price
-export const CUSTOM_COLOR_FEE_CENTS = 0;                // extra per sign for a custom color (set when you decide)
+export const CUSTOM_COLOR_FEE_CENTS = 500;                // extra per sign for a custom color (set when you decide)
 export const TIERS = [[25, 20], [10, 15], [5, 10]];     // [min qty, % off]
 export const SHIPPING_CENTS = 500;                      // flat rate under FREE_SHIP_QTY signs
 export const FREE_SHIP_QTY = 5;
